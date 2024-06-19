@@ -1,10 +1,11 @@
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
-from .serializer import SignInSerializer, SignUpSerializer
+from .serializer import SignInSerializer, SignUpSerializer, UserSerializer
 from user.models import CustomUser
 from django.contrib.auth import authenticate
 from rest_framework.exceptions import AuthenticationFailed
+from .premissions import UserListPermission
 
 
 class SignUpView(viewsets.ModelViewSet):
@@ -29,7 +30,7 @@ class SignUpView(viewsets.ModelViewSet):
 
 
 class UserLoginView(viewsets.ModelViewSet):
-    permission_classes = [permissions.AllowAny,]
+    permission_classes = [permissions.AllowAny]
     serializer_class = SignInSerializer
 
     def create(self, request, *args, **kwargs):
@@ -42,7 +43,14 @@ class UserLoginView(viewsets.ModelViewSet):
         user = authenticate(username=username, password=password)
         if not user:
             raise AuthenticationFailed("Invalid username or password.")
-
         token, created = Token.objects.get_or_create(user=user)
+        response = {'token': token.key}
+        response['is_admin'] = user.is_admin
 
-        return Response({'token': token.key}, status=status.HTTP_200_OK)
+        return Response(response, status=status.HTTP_200_OK)
+
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = CustomUser.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated, UserListPermission]

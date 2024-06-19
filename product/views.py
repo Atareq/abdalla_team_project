@@ -33,6 +33,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
+        print()
         serializer = ProductSerializer(instance, data=request.data,
                                        partial=True)
         serializer.is_valid(raise_exception=True)
