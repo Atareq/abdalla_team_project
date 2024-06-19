@@ -46,7 +46,6 @@ class UserLoginView(viewsets.ModelViewSet):
         token, created = Token.objects.get_or_create(user=user)
         response = {'token': token.key}
         response['is_admin'] = user.is_admin
-        response['']
 
         return Response(response, status=status.HTTP_200_OK)
 
