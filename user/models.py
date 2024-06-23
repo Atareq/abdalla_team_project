@@ -7,3 +7,4 @@ class CustomUser(AbstractUser):
     phonenumber = models.CharField(max_length=15,)
     is_admin = models.BooleanField(default=False)
     employee_id = models.CharField(max_length=50)
+    is_active = models.BooleanField(default=True)
