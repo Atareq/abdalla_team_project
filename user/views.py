@@ -43,14 +43,24 @@ class UserLoginView(viewsets.ModelViewSet):
         user = authenticate(username=username, password=password)
         if not user:
             raise AuthenticationFailed("Invalid username or password.")
-        token, created = Token.objects.get_or_create(user=user)
-        response = {'token': token.key}
-        response['is_admin'] = user.is_admin
+        if user.is_active:
+                
+            token, created = Token.objects.get_or_create(user=user)
+            response = {'token': token.key}
+            response['is_admin'] = user.is_admin
 
-        return Response(response, status=status.HTTP_200_OK)
+            return Response(response, status=status.HTTP_200_OK)
+        return Response(response, status=status.HTTP_403_FORBIDDEN)
 
 
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = CustomUser.objects.all()
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = CustomUser.objects.filter(is_active = True)
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated, UserListPermission]
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.is_active = False
+        instance.save()
+        return Response({'Message': 'Deleted Sucessfuly'},
+                        status=status.HTTP_200_OK)
